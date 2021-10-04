@@ -16,8 +16,34 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
   Serial.begin(9600);
-   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+  setup_display();
+}
+
+void loop() {
+
+  float valArr[3]={29.3,20.1,1.0};
+  int delayTime = 100;
+  String varArr[3][2] = {
+        {"P1","[mbar]"},
+        {"P2","[mbar]"},
+        {"REC","[-]"},
+        };
+
+
+  for (int j=1; j<=500;j++){
+    valArr[0]=valArr[0]+j; // sensor data would appear here
+    valArr[1]=valArr[1]+j*2;
+    valArr[2]=valArr[2]+j*3;
+
+    display_sensorValues(varArr,valArr,delayTime);
+    
+}
+}
+
+
+// Auxiliary Functions
+void setup_display(){
+    if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
@@ -31,35 +57,19 @@ void setup() {
   delay(100);
   display.setTextSize(1);
   display.setTextColor(WHITE);
-
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-
+void display_sensorValues(String varArr[][2], float valArr[], int delayTime){
   
-  String varArr[3]={"P1","P2","REC"};
-  String unitArr[3]={"[mbar]","[mbar]","[-]"};
-  float valArr[3]={29.3,20.1,1.0};
-  int delayTime = 100;
-
-
-
-  for (int j=1; j<=500;j++){
-      display.display();
-      display.setCursor(0, 0);
-      display.clearDisplay();
-      
-    valArr[0]=valArr[0]+j; // sensor data would appear here
-    valArr[1]=valArr[1]+j*2;
-    valArr[2]=valArr[2]+j*3;
-    
-  
-  for (int i=0; i<=2;i++){
-      String msg= varArr[i]+" = "+String(valArr[i],2)+" "+unitArr[i];
-      display.println(msg);
-    };
-      display.display();
-      delay(delayTime);
-}
+  display.display();
+  display.setCursor(0, 0);
+  display.clearDisplay();
+  int arrSize = sizeof(valArr)/sizeof(valArr[0]);
+  string msg[arrSize];
+  for (int i = 0; i <arrSize; i++) {
+    msg[i] = varArr[i][0]+" = "+to_string(valArr[i])+" "+varArr[i][1];
+    display.println(msg[i]);
+  }
+  display.display();
+  delay(delayTime);
 }
